@@ -11,7 +11,10 @@ from src.routes.voice import router as voice_router
 load_dotenv()
 
 from src.db.database import engine, Base
-import src.models # Register models with Base
+from src.models.patient import Patient
+from src.models.appointment import Appointment, AppointmentStatus
+from src.models.clinical_brief import ClinicalBrief
+from src.models.clinical_config import ClinicalConfig
 
 app = FastAPI(title="Clinical Intake API")
 

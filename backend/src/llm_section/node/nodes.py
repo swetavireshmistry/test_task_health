@@ -2,6 +2,7 @@ import re
 import logging
 
 from langchain_core.messages import SystemMessage, ToolMessage, HumanMessage, AIMessage
+from langchain_core.runnables import RunnableConfig
 from src.llm_section.state.state import AgentState
 from src.llm_section.llm_config.llm_config import get_llm
 from src.llm_section.prompts.prompts import get_system_prompt
@@ -61,7 +62,7 @@ async def refresh_clinical_config():
     """Force-reload ClinicalConfig from the DB and update the module cache."""
     global _clinical_config_cache
     from src.db.database import AsyncSessionLocal
-    from src.models import ClinicalConfig
+    from src.models.clinical_config import ClinicalConfig
     from sqlalchemy import select
 
     async with AsyncSessionLocal() as session:
@@ -96,7 +97,7 @@ def _build_custom_instructions(configs: list) -> str:
     return "\n".join(lines)
 
 
-async def chat_node(state: AgentState):
+async def chat_node(state: AgentState, config: RunnableConfig):
     try:
         messages = state.get("messages", [])
         patient_id = state.get("patient_id")
@@ -164,10 +165,8 @@ async def chat_node(state: AgentState):
 
         llm_input = [SystemMessage(content=system_content)] + all_messages
 
+        response = await llm_with_tools.ainvoke(llm_input, config)
 
-        response = await llm_with_tools.ainvoke(llm_input)
-
- 
         if response.content and isinstance(response.content, str):
             response.content = _sanitize_for_voice(response.content)
 

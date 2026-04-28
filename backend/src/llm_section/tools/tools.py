@@ -1,7 +1,9 @@
 from langchain_core.tools import tool
 from src.llm_section.schema.schema import ClinicalBrief, QAEntry
 from src.db.database import AsyncSessionLocal
-from src.models import Patient, Appointment, AppointmentStatus, ClinicalBrief as ClinicalBriefModel
+from src.models.patient import Patient
+from src.models.appointment import Appointment, AppointmentStatus
+from src.models.clinical_brief import ClinicalBrief as ClinicalBriefModel
 from sqlalchemy import select, and_
 from datetime import datetime
 import logging
