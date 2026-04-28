@@ -1,0 +1,15 @@
+fastapi 
+uvicorn[standard]
+langgraph 
+langchain 
+openai
+langchain-openai
+pydantic
+python-dotenv
+langgraph-cli[inmem]
+langchain-groq
+sqlalchemy
+asyncpg
+psycopg2-binary
+websockets
+reportlab
