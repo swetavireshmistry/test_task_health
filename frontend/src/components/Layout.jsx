@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Calendar, MessageSquare, Settings, Activity } from 'lucide-react';
+import { Calendar, MessageSquare, Settings, Activity, Phone, PhoneCall } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Layout = () => {
@@ -9,6 +9,8 @@ const Layout = () => {
   const menuItems = [
     { icon: Calendar, label: 'Appointments', path: '/' },
     { icon: MessageSquare, label: 'Chat Assistant', path: '/chat/new' },
+    { icon: Phone, label: 'Call Logs', path: '/logs' },
+    { icon: PhoneCall, label: 'Smart Dialer', path: '/dialer' },
     { icon: Settings, label: 'Dr Config', path: '/dr-config' },
   ];
 

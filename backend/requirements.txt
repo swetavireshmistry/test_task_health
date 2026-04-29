@@ -13,3 +13,5 @@ asyncpg
 psycopg2-binary
 websockets
 reportlab
+twilio
+python-multipart
