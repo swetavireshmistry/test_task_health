@@ -241,11 +241,10 @@ const DrConfig = () => {
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-                            activeTab === tab
+                        className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all ${activeTab === tab
                                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30'
                                 : 'text-slate-500 hover:text-slate-300'
-                        }`}
+                            }`}
                     >
                         {tab === 'hpi' ? 'HPI — History of Present Illness' : 'ROS — Review of Systems'}
                     </button>

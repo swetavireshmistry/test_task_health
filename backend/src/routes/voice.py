@@ -267,8 +267,8 @@ async def _tts_sentence(websocket: WebSocket, sentence: str):
     try:
         async with asyncio.timeout(10):  # per-sentence TTS timeout
             async with client.audio.speech.with_streaming_response.create(
-                model="tts-1",
-                voice="alloy",
+                model="gpt-4o-mini-tts",
+                voice="nova",
                 input=sentence,
                 response_format="wav",
             ) as response:

@@ -7,6 +7,8 @@ from src.routes.chat import router as chat_router
 from src.routes.appointments import router as appointment_router
 from src.routes.config import router as config_router
 from src.routes.voice import router as voice_router
+from src.routes.twilio import router as twilio_router
+
 
 load_dotenv()
 
@@ -15,6 +17,8 @@ from src.models.patient import Patient
 from src.models.appointment import Appointment, AppointmentStatus
 from src.models.clinical_brief import ClinicalBrief
 from src.models.clinical_config import ClinicalConfig
+from src.models.call_log import CallLog
+
 
 app = FastAPI(title="Clinical Intake API")
 
@@ -37,6 +41,9 @@ app.include_router(chat_router, prefix="/api")
 app.include_router(appointment_router, prefix="/api/appointments")
 app.include_router(config_router, prefix="/api/config")
 app.include_router(voice_router, prefix="/api")
+app.include_router(twilio_router, prefix="/api/twilio")
+
+
 
 @app.get("/")
 def read_root():

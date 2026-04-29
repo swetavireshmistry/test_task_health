@@ -5,6 +5,8 @@ import AppointmentDetail from './components/AppointmentDetail'
 import ChatInterface from './components/ChatInterface'
 import DrConfig from './components/DrConfig'
 import VoiceCall from './components/VoiceCall'
+import CallLogs from './components/CallLogs'
+import Dialer from './components/Dialer'
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
         <Route path="appointment/:id" element={<AppointmentDetail />} />
         <Route path="chat/:appointmentId" element={<ChatInterface />} />
         <Route path="dr-config" element={<DrConfig />} />
+        <Route path="logs" element={<CallLogs />} />
+        <Route path="dialer" element={<Dialer />} />
       </Route>
       {/* Full-screen voice call — outside Layout so it takes over the whole screen */}
       <Route path="voice/:appointmentId" element={<VoiceCall />} />
