@@ -26,6 +26,24 @@ def _split_into_sentences(text: str) -> list[str]:
     return [p.strip() for p in parts if p.strip()]
 
 
+async def _tts_worker(websocket: WebSocket, queue: asyncio.Queue):
+    """
+    Background worker that pulls sentences from a queue and synthesizes
+    them one by one. This decouples LLM generation from TTS.
+    """
+    while True:
+        sentence = await queue.get()
+        if sentence is None:
+            queue.task_done()
+            break
+        try:
+            await _tts_sentence(websocket, sentence)
+        except Exception as e:
+            print(f"[TTS Worker Error] {e}")
+        finally:
+            queue.task_done()
+
+
 
 @router.websocket("/ws/voice")
 async def voice_websocket(websocket: WebSocket):
@@ -52,7 +70,15 @@ async def voice_websocket(websocket: WebSocket):
             # 4. The browser can start playing sentence N while sentence N+1 is
             #    being synthesized → perceived latency drops to ~1 s.
 
-            await _sentence_stream_pipeline(websocket, transcript, thread_id)
+            tts_queue = asyncio.Queue()
+            tts_worker_task = asyncio.create_task(_tts_worker(websocket, tts_queue))
+
+            try:
+                await _sentence_stream_pipeline(websocket, transcript, thread_id, tts_queue)
+            finally:
+                # Signal worker to finish and wait for it
+                await tts_queue.put(None)
+                await tts_worker_task
 
             await _send(websocket, {"type": "audio_end"})
             await _send(websocket, {"type": "status", "status": "listening"})
@@ -180,16 +206,17 @@ async def _sentence_stream_pipeline(
     websocket: WebSocket,
     user_message: str,
     thread_id: str,
+    tts_queue: asyncio.Queue,
 ):
     """
     Collects the full LLM response, then sends it to the UI and runs TTS
     sentence-by-sentence in order.
 
     Timeline per turn:
-        t=0       LLM starts generating (silently)
-        t≈N s     LLM finishes → response_text sent to UI
-        t≈N+0.4s  TTS sentence 1 starts → audio_chunk sent to browser
-        t≈N+0.8s  TTS sentence 2 starts while browser plays sentence 1
+        t=0       LLM starts generating
+        t≈0.1s    Tokens start streaming to UI
+        t≈0.4s    TTS sentence 1 starts → audio_chunk sent to browser
+        t≈0.8s    TTS sentence 2 starts while browser plays sentence 1
     """
     config = {"configurable": {"thread_id": thread_id}}
     input_data = {"messages": [HumanMessage(content=user_message)]}
@@ -202,6 +229,7 @@ async def _sentence_stream_pipeline(
                 if event["event"] == "on_chat_model_stream":
                     token = event["data"]["chunk"].content
                     if token:
+                        await _send(websocket, {"type": "token", "text": token})
                         full_response += token
                         buffer += token
                         
@@ -211,7 +239,7 @@ async def _sentence_stream_pipeline(
                             if len(sentences) > 1 or (buffer.strip() and buffer.strip()[-1] in ".!?"):
                                 to_process = sentences[:-1] if len(sentences) > 1 else sentences
                                 for s in to_process:
-                                    if s: await _tts_sentence(websocket, s)
+                                    if s: tts_queue.put_nowait(s)
                                 
                                 buffer = sentences[-1] if len(sentences) > 1 else ""
 
@@ -220,7 +248,7 @@ async def _sentence_stream_pipeline(
 
     # Final cleanup for any remaining text in buffer
     if buffer.strip():
-        await _tts_sentence(websocket, buffer.strip())
+        tts_queue.put_nowait(buffer.strip())
 
     if not full_response:
         return

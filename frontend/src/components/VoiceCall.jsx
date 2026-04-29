@@ -164,8 +164,12 @@ export default function VoiceCall() {
         setTranscript(msg.text);
         addLog(`STT Result: "${msg.text}"`, 'success');
         break;
+      case 'token':
+        setResponseText((prev) => prev + msg.text);
+        break;
       case 'response_text':
-        pendingResponseTextRef.current = msg.text;
+        setResponseText(msg.text);
+        pendingResponseTextRef.current = '';
         addLog('LLM Result received', 'success');
         break;
       case 'audio_chunk':
